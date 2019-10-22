@@ -1,0 +1,3 @@
+{
+    "mongoURI": "mongodb+srv://Mannex:Mannex@cluster0-nzwsq.mongodb.net/test?retryWrites=true&w=majority"
+}
