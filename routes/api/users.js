@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { check, validationResult } = require("express-validator");
 const User = require('../../models/User.js');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const { check, validationResult } = require("express-validator");
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
@@ -26,7 +26,7 @@ router.post(
     }
 
     // Get users gravatar
-
+// extract variables through destructuring
     const { name, email, password } = req.body;
     try{
         let user = await User.findOne({ email });
@@ -39,6 +39,7 @@ router.post(
             r:'pg',
             d:'mm'
         })
+        // create instance of user
         user = new User({
             name,
             email,
@@ -48,6 +49,8 @@ router.post(
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
 
+
+        // saves user 
         await user.save();
         const payload = {
           user : {
