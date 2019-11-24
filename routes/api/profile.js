@@ -30,35 +30,40 @@ router.get("/me", auth, async (req, res) => {
 // @desc  Create or Update user profile
 // @access  Private
 
-router.post("/", [
-  auth,
+router.post(
+  "/",
   [
-    check("status", "Status is required")
-      .not()
-      .isEmpty(),
-    check("skills", "Skills is required").not().isEmpty()
-  ]
-//   Check for errors
-], async (req,res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-          return res.status(400).json({errors:errors.array()});
-      }
+    auth,
+    [
+      check("status", "Status is required")
+        .not()
+        .isEmpty(),
+      check("skills", "Skills is required")
+        .not()
+        .isEmpty()
+    ]
+    //   Check for errors
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     //   Pull everything out from the body
-      const {
-        company,
-        website,
-        location,
-        bio,
-        status,
-        githubusername,
-        skills,
-        youtube,
-        facebook,
-        twitter,
-        instagram,
-        linkedin
-      } = req.body;
+    const {
+      company,
+      website,
+      location,
+      bio,
+      status,
+      githubusername,
+      skills,
+      youtube,
+      facebook,
+      twitter,
+      instagram,
+      linkedin
+    } = req.body;
 
     //   Build Profile  to insert into data base and check if fields are correct before we set it
 
@@ -71,8 +76,8 @@ router.post("/", [
     if (status) profileFields.status = status;
     if (githubusername) profileFields.githubusername = githubusername;
     if (skills) {
-        profileFields.skills = skills.split(',').map(skill => skill.trim());
-    } 
+      profileFields.skills = skills.split(",").map(skill => skill.trim());
+    }
     //  Build Social Object
 
     profileFields.social = {};
@@ -83,27 +88,29 @@ router.post("/", [
     if (instagram) profileFields.social.instagram = instagram;
 
     // Look for profile by user
-     try {
-         let profile = await Profile.findOne({user : req.secure.id});
-        //  if found
-         if(profile) {
-            //  update
-            profile = await Profile.findOneAndUpdate({user : req.user.id }, { $set: profileFields }, { new : true}
-                );
-                return res.json(profile)
-         }
-        //  if not then Create
-        profile = new Profile(profileFields);
-        // save
-         await profile.save();
-        //  send
-         res.json(profile);
-     } catch (err) {
-         console.error(err.sessage);
-         res.status(500).send('Server Error');
-     }
-}
-);
+    try {
+      // Using upsert option (creates new doc if no match is found):
+      let profile = await Profile.findOne({ user: req.user.id });
 
+      if (profile) {
+        profile = await Profile.findOneAndUpdate(
+          { user: req.user.id },
+          { $set: profileFields },
+          { new: true }
+        );
+            return res.json(profile);
+      }
+    //   Create
+    profile = new Profile(profileFields);
+
+    await profile.save();
+    res.json(profile);
+     
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
 
 module.exports = router;
