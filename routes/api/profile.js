@@ -77,6 +77,7 @@ router.post(
     if (githubusername) profileFields.githubusername = githubusername;
     if (skills) {
       profileFields.skills = skills.split(",").map(skill => skill.trim());
+
     }
     //  Build Social Object
 
@@ -112,5 +113,20 @@ router.post(
     }
   }
 );
+
+// @route GET api/profile
+// @desc  Get All Profiles
+// @access  Public
+
+router.get('/', async (req,res) => {
+  try {
+    const profiles = await Profile.find().populate('user', ['name', 'avater']);
+    res.json(profiles)
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 module.exports = router;
