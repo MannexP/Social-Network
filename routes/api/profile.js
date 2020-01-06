@@ -174,25 +174,25 @@ router.delete("/", auth, async (req, res) => {
 // @access  Private
 
 router.put(
-  "/experience",
+  '/experience',
   [
     auth,
     [
-      check("title", "Title is required")
+      check('title', 'Title is required')
         .not()
         .isEmpty(),
-        check("company", "Company is required")
+      check('company', 'Company is required')
         .not()
         .isEmpty(),
-        check("from", "From date is required")
+      check('from', 'From date is required')
         .not()
         .isEmpty()
     ]
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-      return res.status(400).json({ errors: errors.array() })
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
     const {
@@ -213,20 +213,19 @@ router.put(
       to,
       current,
       description
-    }
+    };
 
     try {
-      const profile = await Profile.findOne ({ user: req.user.id });
+      const profile = await Profile.findOne({ user: req.user.id });
 
-      profile.experience.push(newExp);
+      profile.experience.unshift(newExp);
 
       await profile.save();
 
       res.json(profile);
-
     } catch (err) {
-       console.error(err.message);
-       res.status(500).send("Server Error");
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
   }
 );
