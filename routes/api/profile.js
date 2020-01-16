@@ -229,5 +229,31 @@ router.put(
     }
   }
 );
+//
+// @route DELETE api/profile/experience/:exp_id   (:exp_id is used because it is a place holder)
+// @desc  Delete Experience from  Profile
+// @access  Private
+router.delete('/experience/:exp_id', auth, async (req, res) => {
+  try {
+  // get user by ID
+    const profile = await Profile.findOne({user: req.user.id});
+
+    // get remove index
+    // create removeIndex variable set to profile.experience and map through it with item reuring ID, chain on indexOf and match it to request.params.exp
+    const removeIndex = profile.experience.map(item => item.id).indexOf(req.params.exp_id);
+
+    // take profile we have and use splice to take something out, and we have the value we want to splice in removeIndex
+    profile.experience.splice(removeIndex, 1);
+
+    await profile.save();
+
+    res.json(profile);
+    
+  }catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+    
+  }
+})
 
 module.exports = router;
