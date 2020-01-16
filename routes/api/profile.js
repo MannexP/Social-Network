@@ -4,6 +4,8 @@ const auth = require("../../middleware/auth");
 const Profile = require("../../models/Profile");
 const User = require("../../models/User");
 const { check, validationResult } = require("express-validator");
+const request = require('request')
+const config = require('config');
 
 // @route GET api/profile/me
 // @desc  GET current users profile
@@ -233,6 +235,7 @@ router.put(
 // @route DELETE api/profile/experience/:exp_id   (:exp_id is used because it is a place holder)
 // @desc  Delete Experience from  Profile
 // @access  Private
+
 router.delete('/experience/:exp_id', auth, async (req, res) => {
   try {
   // get user by ID
@@ -321,7 +324,7 @@ router.put(
 );
 //
 // @route DELETE api/profile/education/:edu_id   (:edu_id is used because it is a place holder)
-// @desc  Delete education from  Profile
+// @desc  Delete education from  profile
 // @access  Private
 router.delete('/education/:edu_id', auth, async (req, res) => {
   try {
@@ -343,6 +346,38 @@ router.delete('/education/:edu_id', auth, async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server Error');
     
+  }
+});
+
+// @route GET api/profile/github/:username
+// @desc  Get user repos from GitHUB
+// @access  Public
+
+router.get('/github/:username', (req,res) => {
+  try {
+    // 
+    const options = {
+      uri:`https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&_id=${config.get('githubClientId')}&client_secret=${config.get('githubSecret')}`,
+      // specify method of request
+      method: 'GET',
+      headers: {'user-agent': 'node.js'}
+
+    }
+
+    request(options, (error, response, body) => {
+      if(error) console.error(error);
+
+      if(response.statusCode !== 200) {
+      return res.status(404).json({msg: "No Github Profile found"});
+      }
+
+      res.json(JSON.parse(body));
+
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 })
 

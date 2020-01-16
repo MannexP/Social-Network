@@ -1,4 +1,7 @@
 {
     "mongoURI": "mongodb+srv://Mannex:Mannex@cluster0-nzwsq.mongodb.net/test?retryWrites=true&w=majority",
-    "jwtSecret": "mySecret"
+    "jwtSecret": "mySecret",
+    "githubClientId": "8a5c20d0665db751b3d2",
+    "githubSecret": "d6a95bdf94ac9971d66634db7fb70220637aabf8"
+
 }
