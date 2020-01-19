@@ -67,4 +67,58 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
+// @route GET api/posts/:id
+// @desc GET post by ID
+// @access Private
+
+router.get('/:id', auth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if(!post){
+            return res.status(404).json({msg: 'Post not found'});
+        }
+
+        res.json(post)
+    } catch (err) {
+        console.error(err.message);
+        // error has a kind method 
+        if(err.kind === 'ObjectId'){
+            return res.status(404).json({msg: 'Post not found'});
+        }
+        res.status(500).send('Server Error')
+    }
+});
+
+// @route Delete api/posts/:id
+// @desc Delete post by ID
+// @access Private
+
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+
+        if(!post){
+            return res.status(404).json({msg: 'Post not found'});
+        }
+
+
+        // check to see if the user owns post in order to delete
+        // req.user.id is a string, and post.user is an object, so we make post.user into a string.
+        if(post.user.toString() !== req.user.id){
+            // 401 is not authorizes
+            return res.status(401).json({msg: 'User Not Authorized'});
+        }
+
+        await post.remove();
+
+        res.json({msg: 'Post removed'})
+    } catch (err) {
+        console.error(err.message);
+        if(err.kind === 'ObjectId'){
+            return res.status(404).json({msg: 'Post not found'});
+        }
+        res.status(500).send('Server Error')
+    }
+})
+
 module.exports = router;
