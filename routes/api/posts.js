@@ -186,4 +186,56 @@ router.put("/unlike/:id", auth, async (req, res) => {
     }
   });
 
+  // @route POST api/posts/comment/:id
+  // @desc  Comment on a post
+  // @access Private
+
+router.post(
+    "/comment/:id",
+    [
+      auth,
+      [
+        check("text", "Text is Required")
+          .not()
+          .isEmpty()
+      ]
+    ],
+    async (req, res) => {
+      //   since we are using error checking we set it first
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        //                                       errors has array method, this will return the errors
+        return res.status(400).json({ errors: errors.array() });
+      }
+  
+      try {
+        //                       logged in protected route, giving access to token and ID in req.user. using select to not send back password in json
+        const user = await User.findById(req.user.id).select("-password");
+
+        const post = await Post.findById(req.params.id);
+  
+        //   set new post object. Text comes from body, the rest comes from the user model(name, avatar), and user is for just the ID
+        //   new Post instantiates a new post from the model
+        const newComment = {
+          text: req.body.text,
+          name: user.name,
+          avatar: user.avatar,
+          user: req.user.id
+        };
+
+        post.comments.unshift(newComment)
+  
+        await post.save();
+        res.json(post.comments);
+      } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Error");
+      }
+    }
+  );
+
+  // @route POST api/posts/comment/:id
+  // @desc  Comment on a post
+  // @access Private
+
 module.exports = router;
