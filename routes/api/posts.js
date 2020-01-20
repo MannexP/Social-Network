@@ -151,5 +151,39 @@ router.put("/like/:id", auth, async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+// @route PUT api/posts/unlike/:id
+// @desc Unlike a post
+// @access Private
+
+router.put("/unlike/:id", auth, async (req, res) => {
+    try {
+  
+      const post = await Post.findById(req.params.id);
+  
+      // Check if the post has already been liked by this user
+      if (
+          // if current user equals req.user.id and if that length is greater than 0, it has already been liked. if so return a 400 req
+        post.likes.filter(like => like.user.toString() === req.user.id).length === 0)
+       {
+        return res.status(400).json({ msg: "Post has not been liked" });
+      }
+  
+    //  Get remove index, this gets the like
+    const removeIndex = post.likes.map(like => like.user.toString()).indexOf(req.user.id);
+
+    // this splices it out of the array
+      post.likes.splice(removeIndex, 1);
+  
+      // save to data base
+      await post.save();
+  
+      // return posts 
+      res.json(post.likes);
+       
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
+  });
 
 module.exports = router;
